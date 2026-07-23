@@ -8,10 +8,10 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Set;
 import java.security.Security;
-import java.util.HexFormat;
 import java.util.stream.Collectors;
 import javax.crypto.Cipher;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 
 /**
@@ -51,7 +51,7 @@ public class AsymmetricMain {
         String decrypted = new String(decrypt(privateKey, encrypted));
 
         System.out.println("Plain text: " + text);
-        System.out.println("Public key encrypted: " + HexFormat.of().formatHex(encrypted));
+        System.out.println("Public key encrypted: " + new String(Hex.encode(encrypted)));
         System.out.println("Private key decrypted: " + decrypted);
     }
     

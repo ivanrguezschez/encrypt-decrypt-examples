@@ -1,10 +1,12 @@
 package com.irs.encryptdecryptexamples;
 
+import org.bouncycastle.util.encoders.Hex;
+
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.spec.KeySpec;
-import java.util.HexFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.crypto.Cipher;
@@ -61,9 +63,9 @@ public class SymmetricMain {
         byte[] inputStreamEncrypted = encrypt(key, SymmetricMain.class.getResourceAsStream("/text.txt"));
 
         System.out.println("Plain text: " + password);
-        System.out.println("Key encrypted: " + HexFormat.of().formatHex(keyEncrypted));
-        System.out.println("Password key encrypted: " + HexFormat.of().formatHex(passwordEncrypted));
-        System.out.println("InputStream key encrypted: " + HexFormat.of().formatHex(inputStreamEncrypted));
+        System.out.println("Key encrypted: " + new String(Hex.encode(keyEncrypted)));
+        System.out.println("Password key encrypted: " + new String(Hex.encode(passwordEncrypted)));
+        System.out.println("InputStream key encrypted: " + new String(Hex.encode(inputStreamEncrypted)));
         System.out.println("Key decrypted: " + new String(decrypt(key, keyEncrypted)));
         System.out.println("Password Key decrypted: " + new String(decrypt(passwordKey, passwordEncrypted)));
         System.out.println("HMAC: " + calculateHmac(key, text));
@@ -99,13 +101,23 @@ public class SymmetricMain {
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.ENCRYPT_MODE, key);
         CipherInputStream cipherInputStream = new CipherInputStream(stream, cipher);
-        return cipherInputStream.readAllBytes();
+        //return cipherInputStream.readAllBytes();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+
+        while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
+            baos.write(buffer, 0, bytesRead); // Write only the bytes read
+        }
+
+        return  baos.toByteArray();
     }
 
     public static String calculateHmac(SecretKey key, String text) throws Exception {
         Mac mac = Mac.getInstance("HMACSHA256");
         mac.init(key);
         byte[] bytes = mac.doFinal(text.getBytes());
-        return HexFormat.of().formatHex(bytes);
+        return new String (Hex.encode(bytes));
     }
 }
